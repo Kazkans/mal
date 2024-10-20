@@ -2,7 +2,7 @@ OCAMLC = ocamlc
 OCAMLOPT = ocamlfind ocamlopt -package re -linkpkg
 
 SOURCES = reader.ml printer.ml
-OBJECTS = $(SOURCES:%.ml=.cache/%.cmx)
+OBJECTS = $(SOURCES:%.ml=%.cmx)
 STEPS = step0_repl step1_read_print.ml
 STEPS_BINS = $(STEPS:%.ml=%)
 
