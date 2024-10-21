@@ -8,6 +8,8 @@ let rec main () =
         try 
                 read_line () |> rep |> print_endline;
                 main ()
-        with End_of_file -> ()
+        with End_of_file ->
+            print_endline "EOF";
+            main ()
 
 let () = main ()

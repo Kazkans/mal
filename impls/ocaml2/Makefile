@@ -10,8 +10,8 @@ EXECUTABLE = my_program
 
 all: $(STEPS_BINS)
 
-$(STEPS_BINS): %: %.cmx $(OBJECTS)
-	$(OCAMLOPT) $(OBJECTS) $< -o $@
+$(STEPS_BINS): %: $(OBJECTS) %.cmx
+	$(OCAMLOPT) $(OBJECTS) $@.cmx -o $@
 
 %.cmo: %.ml
 	$(OCAMLC) -c $<
