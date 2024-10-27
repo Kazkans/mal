@@ -4,6 +4,7 @@ type sym = Sym of string
 type mal_type =
     | Int of int
     | Sym of string
+    | Keyword of string
     | List of mal_type list
 
 let next = function
@@ -27,6 +28,7 @@ let tokenize s =
 let read_atom t =
     match t.[0] with
         | '0'..'9' -> Int (int_of_string t)
+        | ':' -> Keyword (String.make 1 (Char.chr 0xFF) ^ t)
         | _ -> Sym t
 
 let rec read_str s =
