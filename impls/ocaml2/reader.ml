@@ -15,10 +15,14 @@ let peek = function
     | Reader [] -> None
 
 (* tokenize string -> string list*)
+
+let (<<) f g x = f(g(x))
+
 let tokenize s =
     let pattern = Re.Pcre.regexp {|[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)|} in
     let gs = Re.all pattern s in
     List.map (fun g -> Re.Group.get g 1) gs
+    |> List.filter (not << (String.starts_with ~prefix:";"))
 
 let read_atom t =
     match t.[0] with
