@@ -8,6 +8,7 @@ type mal_type =
     | List of mal_type list
     | Vector of mal_type list
     | Map of (string, mal_type) Hashtbl.t
+    | Fn of ((mal_type list) -> mal_type)
 
 let next = function
     | Reader (x::xs) -> Some (x, Reader xs)
@@ -29,6 +30,7 @@ let tokenize s =
 
 let read_atom t =
     match t.[0] with
+        | '-' when (String.length t > 1) -> Int (int_of_string t)
         | '0'..'9' -> Int (int_of_string t)
         | ':' -> Keyword (String.make 1 (Char.chr 0xFF) ^ t)
         | _ -> Sym t

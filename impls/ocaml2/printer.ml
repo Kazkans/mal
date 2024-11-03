@@ -15,5 +15,6 @@ and pr_str = function
     | Reader.List l -> "(" ^ (String.concat " " (List.map pr_str l)) ^ ")"
     | Reader.Vector l -> "[" ^ (String.concat " " (List.map pr_str l)) ^ "]"
     | Reader.Map tbl -> "{" ^ (String.trim (Hashtbl.fold f tbl "")) ^ "}"
+    | Reader.Fn _ -> "<Function>"
 
 (*| Map of (string, mal_type) Hashtbl.t*)

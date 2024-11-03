@@ -3,7 +3,7 @@ OCAMLOPT = ocamlfind ocamlopt -package re -linkpkg
 
 SOURCES = reader.ml printer.ml
 OBJECTS = $(SOURCES:%.ml=%.cmx)
-STEPS = step0_repl step1_read_print.ml
+STEPS = step0_repl step1_read_print.ml step2_eval.ml
 STEPS_BINS = $(STEPS:%.ml=%)
 
 EXECUTABLE = my_program
