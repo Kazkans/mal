@@ -26,27 +26,21 @@ let read x = Reader.read_str x
 let rec eval env ast = match ast with
     | Reader.Sym s -> Env.get !env s
     | Reader.List l when List.length l <> 0 ->
-            (match (List.hd l) with
-            | Reader.Sym "def!" ->
-                let s = (match (List.nth l 1) with
-                    | Reader.Sym s -> s
-                    | _ -> raise (Invalid_argument "def! needs symbol")) in
-                let value = (eval env (List.nth l 2)) in
+            (match l with
+            | Reader.Sym "def!" :: Reader.Sym s :: tail :: [] ->
+                let value = (eval env tail) in
                 Env.set !env s value; value
-            | Reader.Sym "let*" ->
-                    (match (List.tl l) with
-                    | Reader.List bindings :: body ->
-                            let env' = ref ((Hashtbl.create 10) :: !env) in
-                            let body = (List.nth l 2) in
-                            let rec bind_pairs = (function
-                                | Reader.Sym s :: expr :: tail ->
-                                        Env.set !env s (eval env' expr);
-                                bind_pairs tail
-                                | [] -> ()
-                                | _ -> raise (Invalid_argument "bad let*")) in
-                            bind_pairs bindings;
-                            eval env' body
-                    | _ -> raise (Invalid_argument "bad_let* 2"))
+            | Reader.Sym "let*" :: Reader.List bindings :: body ->
+                let env' = ref ((Hashtbl.create 10) :: !env) in
+                let body = (List.nth l 2) in
+                let rec bind_pairs = (function
+                    | Reader.Sym s :: expr :: tail ->
+                        Env.set !env s (eval env' expr);
+                        bind_pairs tail
+                    | [] -> ()
+                    | _ -> raise (Invalid_argument "bad let*")) in
+                bind_pairs bindings;
+                eval env' body
             | _ ->
                 let evaluated = List.map (eval env) l in
                 (match (List.hd evaluated) with
@@ -70,6 +64,9 @@ let rec main () =
         with 
             | End_of_file ->
                 print_endline "EOF";
+                main ()
+            | Invalid_argument s ->
+                print_endline s;
                 main ()
             | Not_found ->
                 print_endline "";
