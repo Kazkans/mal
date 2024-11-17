@@ -23,6 +23,7 @@ let () = Hashtbl.add repl_env "/" (Reader.Fn (operation ( / )))*)
 ;;
 
 let read x = Reader.read_str x
+
 let rec eval env ast = match ast with
     | Reader.Sym s -> Env.get !env s
     | Reader.List l when List.length l <> 0 ->
@@ -30,17 +31,10 @@ let rec eval env ast = match ast with
             | Reader.Sym "def!" :: Reader.Sym s :: tail :: [] ->
                 let value = (eval env tail) in
                 Env.set !env s value; value
-            | Reader.Sym "let*" :: Reader.List bindings :: body ->
-                let env' = ref ((Hashtbl.create 10) :: !env) in
-                let body = (List.nth l 2) in
-                let rec bind_pairs = (function
-                    | Reader.Sym s :: expr :: tail ->
-                        Env.set !env s (eval env' expr);
-                        bind_pairs tail
-                    | [] -> ()
-                    | _ -> raise (Invalid_argument "bad let*")) in
-                bind_pairs bindings;
-                eval env' body
+            | Reader.Sym "let*" :: Reader.List bindings :: body :: [] ->
+                eval_let env bindings body
+            | Reader.Sym "let*" :: Reader.Vector bindings :: body :: [] ->
+                eval_let env bindings body
             | _ ->
                 let evaluated = List.map (eval env) l in
                 (match (List.hd evaluated) with
@@ -49,6 +43,17 @@ let rec eval env ast = match ast with
     | Reader.Vector l -> Reader.Vector (List.map (eval env) l)
     | (Reader.Map tbl) as map -> Hashtbl.filter_map_inplace (fun k v -> Some (eval env v)) tbl; map
     | x -> x
+and eval_let env bindings body =
+    let env' = ref ((Hashtbl.create 10) :: !env) in
+    let rec bind_pairs = (function
+        | Reader.Sym s :: expr :: tail ->
+                Env.set !env' s (eval env' expr);
+                        bind_pairs tail
+        | [] -> ()
+        | _ -> raise (Invalid_argument "bad let*")) in
+    bind_pairs bindings;
+    eval env' body
+
 let print x = Printer.pr_str x
 
 let repl_env = ref repl_env
