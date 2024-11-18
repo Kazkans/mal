@@ -2,8 +2,11 @@ type reader = Reader of string list
 type sym = Sym of string
 
 type mal_type =
+    | Bool of bool
+    | Nil
     | Int of int
     | Sym of string
+    | String of string
     | Keyword of string
     | List of mal_type list
     | Vector of mal_type list
@@ -22,6 +25,12 @@ let peek = function
 
 let (<<) f g x = f(g(x))
 
+let starts_with s x =
+    (String.get s 0) = x
+
+let ends_with s x =
+    (String.get s (String.length s - 1)) = x
+
 let tokenize s =
     let pattern = Re.Pcre.regexp {|[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)|} in
     let gs = Re.all pattern s in
@@ -33,7 +42,12 @@ let read_atom t =
         | '-' when (String.length t > 1) -> Int (int_of_string t)
         | '0'..'9' -> Int (int_of_string t)
         | ':' -> Keyword (String.make 1 (Char.chr 0xFF) ^ t)
-        | _ -> Sym t
+        | _ -> (match t with
+            | "true" -> Bool true
+            | "false" -> Bool false
+            | "nil" -> Nil    
+            | s when starts_with s '"' && ends_with s '"' -> String (String.sub s 1 (String.length s - 2))
+            | _ -> Sym t)
 
 let get_string = function
     | Sym s -> s 
